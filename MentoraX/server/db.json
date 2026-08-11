@@ -1,0 +1,221 @@
+[
+  {
+    "name": "Multi-page Submission",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Error parsing evaluation",
+    "date": "2026-08-11T11:43:00.063Z"
+  },
+  {
+    "name": "Multi-page Submission",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Error parsing evaluation",
+    "date": "2026-08-11T11:53:27.882Z"
+  },
+  {
+    "name": "Multi-page Submission",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Error parsing evaluation",
+    "date": "2026-08-11T12:07:41.467Z"
+  },
+  {
+    "name": "Multi-page Submission",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Error parsing evaluation",
+    "date": "2026-08-11T12:13:40.066Z"
+  },
+  {
+    "name": "Multi-page Submission",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Error parsing evaluation",
+    "date": "2026-08-11T12:18:13.908Z"
+  },
+  {
+    "name": "Multi-page Submission",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Error parsing evaluation",
+    "date": "2026-08-11T12:22:10.012Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irine009@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The provided submission contains only extraction error messages and no actual answers to the KNN problem, so it is impossible to evaluate the required calculations, ordering, neighbor identification, or predictions. Please submit the complete written work for grading.",
+    "date": "2026-08-11T12:37:03.536Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irine007@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission does not contain any of the required calculations, explanations, or results for the K‑Nearest Neighbors problem, so the rubric cannot be applied. Please provide the Euclidean distances, ordered list, nearest neighbors, prediction for K=3, and discussion of how the prediction changes for K=5.",
+    "date": "2026-08-11T12:37:03.536Z"
+  },
+  {
+    "name": "3 Pages",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the KNN problem, so it cannot be evaluated against the rubric. Please provide the distances, ordered list, nearest neighbors, prediction, and analysis for K=5.",
+    "date": "2026-08-11T12:45:16.657Z"
+  },
+  {
+    "name": "3 Pages",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing answer content",
+    "feedback": "The submission does not contain any of the required calculations, neighbor identification, or explanations for the KNN problem, so it cannot be evaluated against the rubric.",
+    "date": "2026-08-11T12:51:53.501Z"
+  },
+  {
+    "name": "3 Pages",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission contains no extracted text from the assignment, so none of the required calculations or explanations can be evaluated. Please provide the student's answers for grading.",
+    "date": "2026-08-11T12:56:52.581Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission does not contain any of the required calculations, neighbor identification, or explanations, so it cannot be evaluated against the rubric. Please provide the complete answers to the questions.",
+    "date": "2026-08-11T13:02:28.127Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "No answer provided",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the K‑Nearest Neighbors problem, so it cannot be evaluated against the rubric. Please provide the distances, ordering, nearest neighbors, prediction, and analysis for K=5.",
+    "date": "2026-08-11T13:02:28.127Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submitted material contains no extracted text for the assignment, so none of the required calculations or explanations can be evaluated. Please provide the complete answers to the questions so they can be graded.",
+    "date": "2026-08-11T13:05:47.701Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the KNN problem, so the rubric criteria cannot be assessed. Please provide the Euclidean distances, ordered list, nearest neighbors, prediction, and analysis for K=5.",
+    "date": "2026-08-11T13:05:47.701Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submitted material contains no readable content for the assignment, so the required calculations, neighbor identification, and explanations cannot be evaluated. Please provide the complete text of your work to receive a proper assessment.",
+    "date": "2026-08-11T13:17:51.446Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing answer",
+    "feedback": "The submission does not contain any of the required calculations, distance ordering, neighbor identification, or explanations for the KNN problem, so it cannot be evaluated.",
+    "date": "2026-08-11T13:17:51.446Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "No answer provided",
+    "feedback": "The submission contains no extracted text from the assignment, so none of the required calculations or explanations can be evaluated. Please provide the student's responses to assess their work.",
+    "date": "2026-08-11T13:20:44.299Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing answer",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the K‑Nearest Neighbors problem, so the rubric cannot be applied. Please provide the Euclidean distances, ordered list, nearest neighbors, prediction for K=3, and discussion of how the result changes for K=5.",
+    "date": "2026-08-11T13:20:44.299Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission contains no extracted text for the assignment, so none of the required calculations, neighbor identification, or explanations are present. Please provide the answers to the questions as outlined in the rubric.",
+    "date": "2026-08-11T13:25:51.196Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the KNN problem, so the rubric cannot be applied. Please provide the Euclidean distances, ordered list, nearest neighbors, prediction, and analysis for K=5.",
+    "date": "2026-08-11T13:25:51.196Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "No answer provided",
+    "feedback": "The submission contains no extracted content for the assignment, so none of the required calculations or explanations are present. To earn points, you need to compute the Euclidean distances, list them in order, identify the nearest neighbors for K=3 and K=5, and explain how the prediction changes with different K values.",
+    "date": "2026-08-11T13:55:37.500Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing answer",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the K‑Nearest Neighbors problem, so the rubric cannot be applied. Please provide the Euclidean distances, ordered list, nearest neighbors, prediction for K=3, and discussion of how the result changes for K=5.",
+    "date": "2026-08-11T13:55:37.500Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the K‑Nearest Neighbors problem, so the rubric criteria cannot be evaluated. Please provide the Euclidean distances, ordered list, nearest neighbors, prediction for K=3, and discussion of how the result changes for K=5.",
+    "date": "2026-08-11T14:04:06.001Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submitted material could not be extracted, so the required calculations and explanations are not visible. Without the student's work, the assignment cannot be evaluated.",
+    "date": "2026-08-11T14:04:06.001Z"
+  }
+]

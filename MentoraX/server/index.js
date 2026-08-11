@@ -1,0 +1,484 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { google } from 'googleapis';
+import Groq from 'groq-sdk';
+import axios from 'axios';
+import { parse } from 'csv-parse/sync';
+import fs from 'fs';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+dotenv.config({ override: true });
+
+const app = express();
+const port = process.env.PORT || 3001;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Initialize Groq client (requires GROQ_API_KEY in .env)
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || 'dummy-key-for-now'
+});
+
+// Basic Health Check Route
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'MentoraX Backend is running!' });
+});
+
+// Database Endpoint
+app.get('/api/students', (req, res) => {
+  try {
+    if (fs.existsSync('db.json')) {
+      const db = JSON.parse(fs.readFileSync('db.json', 'utf8'));
+      res.json(db);
+    } else {
+      res.json([]);
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to read database' });
+  }
+});
+
+// Gemini Vision Logic
+async function extractTextWithGemini(assignment) {
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    
+    // Ensure mimeType is supported by Gemini
+    let safeMimeType = assignment.mimeType;
+    if (!safeMimeType || !safeMimeType.startsWith('image/')) {
+      safeMimeType = 'image/jpeg';
+    }
+
+    // Convert base64 data to GoogleGenerativeAI format
+    const imagePart = {
+      inlineData: {
+        data: assignment.base64,
+        mimeType: safeMimeType
+      }
+    };
+    
+    console.log(`[Agent Debug] Sending to Gemini: ${safeMimeType}, Base64 length: ${assignment.base64.length}, starts with: ${assignment.base64.substring(0, 20)}`);
+    
+    const prompt = 'You are an expert OCR system. Read the handwritten assignment in this image and transcribe the text perfectly. Output ONLY the raw transcribed text with no conversational filler or markdown formatting.';
+    
+    const result = await model.generateContent([prompt, imagePart]);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.warn(`[Agent] Gemini Vision Model failed: ${error.message}`);
+    throw error;
+  }
+}
+
+// Helper function to extract folder ID from Google Drive URL
+function extractFolderId(url) {
+  const match = url.match(/\/folders\/([a-zA-Z0-9-_]+)/);
+  return match ? match[1] : null;
+}
+
+// Helper for recursive folder scanning
+async function getAllFilesInFolder(drive, folderId) {
+  let allFiles = [];
+  try {
+    const response = await drive.files.list({
+      q: `'${folderId}' in parents and trashed=false`,
+      fields: 'files(id, name, mimeType, size, webContentLink)',
+    });
+    for (const file of response.data.files || []) {
+      if (file.mimeType === 'application/vnd.google-apps.folder') {
+        const subFiles = await getAllFilesInFolder(drive, file.id);
+        allFiles = allFiles.concat(subFiles);
+      } else {
+        allFiles.push(file);
+      }
+    }
+  } catch (e) {
+    console.error("Recursive fetch error:", e);
+  }
+  return allFiles;
+}
+
+// Main Evaluation Endpoint
+app.post('/api/evaluate', async (req, res) => {
+  // Set headers for SSE
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const sendLog = (message, status = 'pending', icon = 'Bot') => {
+    console.log(message);
+    res.write(`data: ${JSON.stringify({ type: 'log', message, status, icon })}\n\n`);
+  };
+
+  try {
+    const { driveUrl, accessToken } = req.body;
+    
+    if (!driveUrl || !accessToken) {
+      sendLog('[Error] Missing driveUrl or accessToken', 'warning', 'AlertTriangle');
+      return res.end();
+    }
+
+    const folderId = extractFolderId(driveUrl);
+    if (!folderId) {
+      sendLog('[Error] Invalid Google Drive Folder URL', 'warning', 'AlertTriangle');
+      return res.end();
+    }
+
+    sendLog(`[Drive Agent] Connecting to Google Drive via OAuth...`, 'running', 'UploadCloud');
+
+    const auth = new google.auth.OAuth2();
+    auth.setCredentials({ access_token: accessToken });
+    const drive = google.drive({ version: 'v3', auth });
+
+    sendLog(`[Drive Agent] Recursively searching folder ${folderId} and all subfolders...`, 'running', 'Search');
+    const files = await getAllFilesInFolder(drive, folderId);
+    
+    // Filter to relevant files
+    const relevantFiles = files.filter(f => 
+      f.mimeType.startsWith('image/') || 
+      f.mimeType === 'application/pdf' || 
+      f.name === 'students.csv' || 
+      f.name.toLowerCase().includes('rubric') || 
+      f.name.toLowerCase().includes('question')
+    );
+
+    console.log(`[Agent Debug] Drive Files:`, relevantFiles.map(f => ({ name: f.name, size: f.size })));
+
+    sendLog(`[Drive Agent] Found ${relevantFiles.length} valid files across all folders.`, 'success', 'CheckCircle');
+
+    if (relevantFiles.length === 0) {
+      sendLog('[Error] No relevant files found in the provided folder.', 'warning', 'AlertTriangle');
+      return res.end();
+    }
+
+    // Process CSV Mapping
+    let studentMapping = [];
+    const csvFile = relevantFiles.find(f => f.name === 'students.csv');
+    if (csvFile) {
+      sendLog(`[Drive Agent] Found students.csv, extracting email mappings...`, 'running', 'FileText');
+      const csvRes = await drive.files.get({ fileId: csvFile.id, alt: 'media' }, { responseType: 'text' });
+      studentMapping = parse(csvRes.data, { columns: true, skip_empty_lines: true });
+      sendLog(`[Drive Agent] Mapped ${studentMapping.length} students from CSV.`, 'success', 'CheckCircle');
+    }
+
+    // Identify Rubric
+    let rubricContext = "Grade the assignment based on standard academic knowledge.";
+    const rubricFile = relevantFiles.find(f => f.name.toLowerCase().includes('rubric') || f.name.toLowerCase().includes('question'));
+    
+    if (rubricFile) {
+      sendLog(`[Drive Agent] Found Rubric file: ${rubricFile.name}. Fetching context...`, 'running', 'FileText');
+      try {
+        const fileRes = await drive.files.get({ fileId: rubricFile.id, alt: 'media' }, { responseType: 'arraybuffer' });
+        if (rubricFile.mimeType.startsWith('text/')) {
+          rubricContext = Buffer.from(fileRes.data).toString('utf-8');
+        } else if (rubricFile.mimeType.startsWith('image/')) {
+          const base64Data = Buffer.from(fileRes.data).toString('base64');
+          sendLog(`[Vision Agent] Transcribing image rubric...`, 'running', 'Bot');
+          rubricContext = await extractTextWithFallback({ mimeType: rubricFile.mimeType, base64: base64Data }, groq);
+        } else {
+          rubricContext = "Mocked PDF Rubric text for hackathon.";
+        }
+        sendLog(`[Drive Agent] Rubric context parsed successfully.`, 'success', 'CheckCircle');
+      } catch (err) {
+        sendLog(`[Error] Failed parsing rubric: ${err.message}`, 'warning', 'AlertTriangle');
+      }
+    } else {
+      sendLog(`[Drive Agent] No rubric found. Using default instructions.`, 'success', 'CheckCircle');
+    }
+
+    // Identify Assignment Files
+    const assignmentFiles = relevantFiles.filter(f => f.name !== 'students.csv' && f.id !== (rubricFile?.id || null));
+    
+    // ==========================================
+    // Phase 1.5: The Organizer Agent (AI Fuzzy Matching)
+    // ==========================================
+    sendLog(`[Organizer Agent] Intelligently matching ${assignmentFiles.length} messy filenames to student emails...`, 'running', 'Users');
+    
+    let matchedMapping = [];
+    if (studentMapping.length > 0) {
+      try {
+        const fileNamesList = assignmentFiles.map(f => f.name).join('\n');
+        
+        console.log(`[Agent Debug] studentMapping from CSV:`, studentMapping);
+        const emailsList = studentMapping.map(s => s.email || s.Email || s.EMAIL || Object.values(s)[1]).join('\n'); // Fallbacks in case the column is named differently
+        console.log(`[Agent Debug] emailsList:`, emailsList);
+        
+        const organizerPrompt = `You are a smart Organizer Agent. Match the following messy filenames to the correct student email address based on semantic similarity. You MUST strictly select the email EXACTLY as it appears in the provided STUDENT EMAILS list. Do NOT make up, guess, or hallucinate emails. If the student's name in the filename matches a name in the email, map them.\n\nFILENAMES:\n${fileNamesList}\n\nSTUDENT EMAILS:\n${emailsList}\n\nRespond with ONLY a JSON object containing a "matches" key. The "matches" key should hold an array of objects, where each object has "filename" and "email" keys. If a file cannot be matched to ANY email in the list, map it to "unknown@student.edu".`;
+
+        const organizerCompletion = await groq.chat.completions.create({
+          model: 'llama-3.3-70b-versatile', // Stronger reasoning model to prevent hallucinations
+          messages: [{ role: 'system', content: organizerPrompt }],
+          temperature: 0.1,
+          response_format: { type: 'json_object' }
+        });
+
+        // Ensure the response is parsed correctly as an array or object containing the array
+        let parsedMatch = JSON.parse(organizerCompletion.choices[0].message.content);
+        if (Array.isArray(parsedMatch)) {
+          matchedMapping = parsedMatch;
+        } else if (parsedMatch.matches) {
+           matchedMapping = parsedMatch.matches;
+        } else {
+           matchedMapping = Object.values(parsedMatch)[0] || [];
+        }
+        
+        sendLog(`[Organizer Agent] Successfully matched assignments to emails via AI reasoning!`, 'success', 'CheckCircle');
+      } catch (matchError) {
+        console.error(`[Organizer Error] Failed to match:`, matchError);
+        sendLog(`[Organizer Agent] Fuzzy match failed, falling back to strict CSV names...`, 'warning', 'AlertTriangle');
+        matchedMapping = studentMapping;
+      }
+    } else {
+      sendLog(`[Organizer Agent] No CSV provided, defaulting to unknown emails...`, 'warning', 'AlertTriangle');
+    }
+
+    sendLog(`[Drive Agent] Downloading student assignments into memory...`, 'running', 'Download');
+    const assignments = [];
+    for (const file of assignmentFiles) {
+      try {
+        let url = file.webContentLink || `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
+        
+        let fetchRes = await axios.get(url, { 
+          headers: { Authorization: `Bearer ${accessToken}` },
+          responseType: 'arraybuffer',
+          maxRedirects: 0,
+          validateStatus: status => status >= 200 && status < 400
+        });
+        
+        if (fetchRes.status >= 300 && fetchRes.headers.location) {
+          fetchRes = await axios.get(fetchRes.headers.location, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            responseType: 'arraybuffer'
+          });
+        }
+        
+        const fileBuffer = Buffer.from(fetchRes.data);
+        
+        console.log(`[Drive Debug] Downloaded ${file.name}. Actual File Size on Google Drive: ${file.size} bytes. Buffer byteLength: ${fileBuffer.byteLength}`);
+        
+        // Find mapped email from AI Organizer output or fallback
+        const aiMatch = matchedMapping.find(m => m.filename === file.name);
+        const fallbackMatch = studentMapping.find(s => s.filename === file.name);
+        const assignedEmail = aiMatch ? aiMatch.email : (fallbackMatch ? fallbackMatch.email : 'unknown@student.edu');
+
+        assignments.push({
+          id: file.id,
+          name: file.name,
+          studentEmail: assignedEmail,
+          mimeType: file.mimeType,
+          base64: fileBuffer.toString('base64')
+        });
+      } catch (err) {
+        sendLog(`[Error] Downloading ${file.name}: ${err.message}`, 'warning', 'AlertTriangle');
+      }
+    }
+    sendLog(`[Drive Agent] All assignments downloaded.`, 'success', 'CheckCircle');
+
+    // ==========================================
+    // Phase 1.6: Grouping Multi-Page Assignments
+    // ==========================================
+    sendLog(`[Organizer Agent] Grouping multi-page assignments by student email...`, 'running', 'Users');
+    const groupedAssignments = {};
+    for (const a of assignments) {
+      if (!groupedAssignments[a.studentEmail]) groupedAssignments[a.studentEmail] = { studentEmail: a.studentEmail, files: [], extractedText: '' };
+      groupedAssignments[a.studentEmail].files.push(a);
+    }
+    const studentRecords = Object.values(groupedAssignments);
+    sendLog(`[Organizer Agent] Consolidated into ${studentRecords.length} unique student records.`, 'success', 'CheckCircle');
+
+    // Phase 2: OCR / Vision Agent Integration
+    sendLog(`[Vision Agent] Initializing gemini-1.5-flash for handwriting extraction...`, 'running', 'Bot');
+    for (const record of studentRecords) {
+      sendLog(`[Vision Agent] Processing ${record.files.length} pages for ${record.studentEmail}...`, 'running', 'Bot');
+      let combinedText = '';
+      for (let i = 0; i < record.files.length; i++) {
+        const file = record.files[i];
+        sendLog(`[Vision Agent] Reading page ${i + 1}: ${file.name}...`, 'running', 'Eye');
+        try {
+          const extractedPageText = await extractTextWithGemini(file);
+          combinedText += `\n--- PAGE ${i + 1} (${file.name}) ---\n${extractedPageText}\n`;
+          sendLog(`[Vision Agent] Extracted text from page ${i + 1}`, 'success', 'CheckCircle');
+        } catch (visionError) {
+          sendLog(`[Vision Agent Error] Failed on ${file.name}`, 'warning', 'AlertTriangle');
+          combinedText += `\n--- PAGE ${i + 1} (${file.name}) ---\n[ERROR EXTRACTING TEXT]\n`;
+        }
+      }
+      record.extractedText = combinedText;
+    }
+
+    // Phase 3: Evaluation Agent Integration (Groq LLM)
+    sendLog(`[Evaluator Agent] Initializing openai/gpt-oss-120b grading pipeline...`, 'running', 'Users');
+    const results = [];
+
+    for (const record of studentRecords) {
+      if (record.extractedText.includes("[ERROR EXTRACTING TEXT]") && record.extractedText.length < 50) {
+        results.push({ name: 'Multi-page Submission', studentEmail: record.studentEmail, score: 0, status: 'Held for Review', feedback: 'Failed to extract text from images.' });
+        continue;
+      }
+      try {
+        sendLog(`[Evaluator Agent] Grading full submission for ${record.studentEmail} against rubric...`, 'running', 'BarChart2');
+        const evalModels = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'llama-3.3-70b-versatile'];
+        let evalContent = '';
+
+        for (const model of evalModels) {
+          try {
+            const evalCompletion = await groq.chat.completions.create({
+              model: model,
+              messages: [
+                {
+                  role: 'system',
+                  content: `You are an expert teacher grading an assignment. Evaluate the following extracted text against this specific question/rubric:\n\n### RUBRIC / QUESTION ###\n${rubricContext}\n\n### INSTRUCTIONS ###\nProvide a JSON response with exactly three keys: "score" (number from 0 to 100), "feedback" (a short, constructive paragraph), and "attention_required" (string, either "None" or a very short phrase describing the main issue if the score is low).`
+                },
+                {
+                  role: 'user',
+                  content: `Here is the transcribed text of the student's multi-page assignment: \n\n${record.extractedText}`
+                }
+              ],
+              temperature: 0.2,
+              response_format: { type: 'json_object' }
+            });
+            evalContent = evalCompletion.choices[0].message.content;
+            break; // Success, break out of fallback loop
+          } catch (modelError) {
+            console.warn(`[Agent] Eval Model ${model} failed:`, modelError.message);
+            if (model === evalModels[evalModels.length - 1]) throw modelError;
+          }
+        }
+
+        const evaluation = JSON.parse(evalContent);
+        
+        // Determine status based on score
+        const status = evaluation.score < 60 ? 'Held for Review' : 'Emailed';
+        
+        results.push({
+          name: record.files.length > 1 ? `${record.files.length} Pages` : record.files[0].name,
+          studentEmail: record.studentEmail,
+          score: evaluation.score,
+          status: status,
+          attention_required: evaluation.attention_required,
+          feedback: evaluation.feedback
+        });
+        
+        sendLog(`[Evaluator Agent] Scored ${record.studentEmail}: ${evaluation.score}% -> ${status}`, 'success', 'CheckCircle');
+
+      } catch (evalError) {
+        sendLog(`[Evaluator Error] Failed grading ${record.studentEmail}`, 'warning', 'AlertTriangle');
+        results.push({ name: 'Multi-page Submission', studentEmail: record.studentEmail, score: 0, status: 'Held for Review', attention_required: 'Error parsing evaluation' });
+      }
+    }
+
+    // Phase 4: Send results via Gmail API using accessToken
+    sendLog(`[Gmail Agent] Initializing email dispatch...`, 'running', 'Mail');
+    const gmail = google.gmail({ version: 'v1', auth });
+
+    for (const resItem of results) {
+      if (resItem.status === 'Emailed' && resItem.studentEmail !== 'unknown@student.edu') {
+        try {
+          const subject = 'Your Assignment Feedback - MentoraX';
+          const body = `Hello,\n\nHere is the feedback for your recent assignment (${resItem.name}):\n\nScore: ${resItem.score}/100\n\nFeedback:\n${resItem.feedback}\n\nBest regards,\nMentoraX AI Assistant`;
+          
+          // Construct raw email
+          const emailLines = [
+            `To: ${resItem.studentEmail}`,
+            'Content-type: text/plain;charset=utf-8',
+            'MIME-Version: 1.0',
+            `Subject: ${subject}`,
+            '',
+            body
+          ];
+          const email = emailLines.join('\r\n');
+          const base64EncodedEmail = Buffer.from(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
+
+          await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: {
+              raw: base64EncodedEmail,
+            },
+          });
+          sendLog(`[Gmail Agent] Successfully emailed feedback to ${resItem.studentEmail}`, 'success', 'CheckCircle');
+        } catch (emailError) {
+          sendLog(`[Gmail Error] Failed on ${resItem.studentEmail}: ${emailError.message}`, 'warning', 'AlertTriangle');
+          resItem.status = 'Held for Review'; // Failed to send
+        }
+      } else if (resItem.status === 'Emailed') {
+         sendLog(`[Gmail Agent] Skipped emailing ${resItem.name} (No mapped email)`, 'warning', 'AlertTriangle');
+      }
+    }
+
+    // Send final payload
+    // Database storage
+    try {
+      let db = [];
+      if (fs.existsSync('db.json')) {
+        db = JSON.parse(fs.readFileSync('db.json', 'utf8'));
+      }
+      // Add a date to each result
+      const newResults = results.map(r => ({ ...r, date: new Date().toISOString() }));
+      db = db.concat(newResults);
+      fs.writeFileSync('db.json', JSON.stringify(db, null, 2));
+    } catch (dbError) {
+      console.warn("Failed to save to database:", dbError);
+    }
+
+    sendLog('[Pipeline] Evaluation complete. Updating UI...', 'success', 'CheckCircle');
+    res.write(`data: ${JSON.stringify({ type: 'done', results })}\n\n`);
+    res.end();
+
+  } catch (error) {
+    sendLog(`[System Error] Critical failure: ${error.message}`, 'warning', 'AlertTriangle');
+    res.end();
+  }
+});
+
+// Endpoint to approve and send email for a Held for Review assignment
+app.post('/api/approve', async (req, res) => {
+  try {
+    const { studentEmail, score, feedback, accessToken, name } = req.body;
+    
+    if (!studentEmail || !accessToken) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    console.log(`[Agent] Initiating Gmail Agent for manually approved assignment: ${name}`);
+    const auth = new google.auth.OAuth2();
+    auth.setCredentials({ access_token: accessToken });
+    const gmail = google.gmail({ version: 'v1', auth });
+
+    const subject = 'Your Assignment Feedback - MentoraX';
+    const body = `Hello,\n\nHere is the feedback for your recent assignment (${name}):\n\nScore: ${score}/100\n\nFeedback:\n${feedback}\n\nBest regards,\nMentoraX AI Assistant`;
+    
+    // Construct raw email
+    const emailLines = [
+      `To: ${studentEmail}`,
+      'Content-type: text/plain;charset=utf-8',
+      'MIME-Version: 1.0',
+      `Subject: ${subject}`,
+      '',
+      body
+    ];
+    const email = emailLines.join('\r\n');
+    const base64EncodedEmail = Buffer.from(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
+
+    await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: base64EncodedEmail,
+      },
+    });
+
+    console.log(`[Agent] Successfully emailed feedback to ${studentEmail}`);
+    res.json({ status: 'success', message: 'Email dispatched successfully.' });
+
+  } catch (error) {
+    console.error(`[Agent] Gmail Error for manual approval:`, error.message);
+    res.status(500).json({ error: 'Failed to send email.' });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
