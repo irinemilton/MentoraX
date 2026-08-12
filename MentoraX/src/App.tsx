@@ -529,19 +529,35 @@ function App() {
                       No data to display yet.
                     </div>
                   ) : (
-                    <div className="flex items-end justify-around h-[200px] mt-8 border-b border-gray-600 pb-2 gap-2">
-                      {evalResults.map((result, idx) => (
-                        <div key={idx} className="flex flex-col items-center flex-1 group">
-                          <span className="text-xs text-gray-400 mb-2 opacity-0 group-hover:opacity-100 transition-opacity">{result.score}%</span>
-                          <div 
-                            className={`w-full rounded-t-sm transition-all duration-1000 ${result.score > 75 ? 'bg-green-500/80' : result.score > 60 ? 'bg-yellow-500/80' : 'bg-red-500/80'}`}
-                            style={{ height: `${Math.max(result.score, 5)}%`, boxShadow: '0 0 10px rgba(0,0,0,0.3)' }}
-                          ></div>
-                          <span className="text-xs text-gray-500 mt-2 truncate w-full text-center" title={result.studentEmail}>
-                            {result.studentEmail.split('@')[0]}
-                          </span>
-                        </div>
-                      ))}
+                    <div className="flex items-end justify-around mt-8 border-b border-gray-600 pb-2 gap-4" style={{ height: '200px' }}>
+                      {evalResults.map((result, idx) => {
+                        const barHeight = Math.max((result.score / 100) * 180, 8);
+                        const barColor = result.score > 75
+                          ? 'linear-gradient(to top, #16a34a, #4ade80)'
+                          : result.score > 60
+                          ? 'linear-gradient(to top, #ca8a04, #facc15)'
+                          : 'linear-gradient(to top, #dc2626, #f87171)';
+                        return (
+                          <div key={idx} className="flex flex-col items-center justify-end" style={{ flex: 1, height: '100%' }}>
+                            <span className="text-xs font-bold mb-1" style={{ color: result.score > 75 ? '#4ade80' : result.score > 60 ? '#facc15' : '#f87171' }}>
+                              {result.score}%
+                            </span>
+                            <div
+                              style={{
+                                width: '100%',
+                                height: `${barHeight}px`,
+                                background: barColor,
+                                borderRadius: '6px 6px 0 0',
+                                boxShadow: result.score > 75 ? '0 0 12px rgba(74,222,128,0.4)' : result.score > 60 ? '0 0 12px rgba(250,204,21,0.4)' : '0 0 12px rgba(248,113,113,0.4)',
+                                transition: 'height 1s ease',
+                              }}
+                            />
+                            <span className="text-xs text-gray-400 mt-2 truncate w-full text-center" title={result.studentEmail}>
+                              {result.studentEmail.split('@')[0]}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

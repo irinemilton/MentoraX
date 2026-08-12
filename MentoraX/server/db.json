@@ -217,5 +217,121 @@
     "attention_required": "Missing content",
     "feedback": "The submitted material could not be extracted, so the required calculations and explanations are not visible. Without the student's work, the assignment cannot be evaluated.",
     "date": "2026-08-11T14:04:06.001Z"
+  },
+  {
+    "name": "Multi-page Submission",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Error parsing evaluation",
+    "date": "2026-08-11T17:01:51.081Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 20,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance calculations and neighbor selection",
+    "feedback": "The student calculated several distances incorrectly (C3’s distance is wrong and swapped with C4), leading to an inaccurate ordering of neighbors. Consequently, the identified 3‑nearest neighbors are incorrect, and the majority‑vote predictions for K=3 and K=5 are both opposite to the correct Yes outcome. The explanation for the K=5 change also misinterprets how K‑NN works. Review the Euclidean distance formula, tie handling, and majority voting to correct these fundamental mistakes.",
+    "date": "2026-08-12T04:26:12.156Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 30,
+    "status": "Held for Review",
+    "attention_required": "Missing calculations for questions 1‑4",
+    "feedback": "You correctly explained how the prediction changes when K=5, showing the majority vote and that the outcome remains \"Yes.\" However, the assignment is missing the required calculations for the Euclidean distances, the ordered list of distances, identification of the 3 nearest neighbors, and the prediction for K=3. To improve, provide the full step‑by‑step distance calculations and the corresponding predictions for both K=3 and K=5.",
+    "date": "2026-08-12T04:26:12.156Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "No answer provided",
+    "feedback": "The submission does not contain any of the required calculations, ordering, neighbor identification, prediction, or explanation for K=5. Without these elements, the assignment cannot be evaluated against the rubric.",
+    "date": "2026-08-12T05:03:23.655Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submitted pages could not be read; no answer content was provided to evaluate against the rubric.",
+    "date": "2026-08-12T05:03:23.655Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "No answer provided",
+    "feedback": "The submission does not contain any of the required calculations, ordering, neighbor identification, or explanations for K=3 and K=5. Without these elements, the assignment cannot be evaluated against the rubric.",
+    "date": "2026-08-12T05:13:40.902Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 10,
+    "status": "Held for Review",
+    "attention_required": "Missing solution",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the KNN problem, so the answer cannot be evaluated against the rubric. Please provide the Euclidean distances, ordered list, nearest neighbors, prediction, and discussion of changing K.",
+    "date": "2026-08-12T05:13:40.902Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing answer",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the KNN problem, so none of the rubric criteria are met. Please provide the Euclidean distances, ordered list, nearest neighbors, prediction for K=3, and discussion of the effect of changing K to 5.",
+    "date": "2026-08-12T05:20:55.204Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Missing content",
+    "feedback": "The submission contains no extracted text for any of the pages, so none of the required calculations or explanations can be evaluated. Please provide the student's answers so they can be graded against the rubric.",
+    "date": "2026-08-12T05:20:55.204Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "No answer provided",
+    "feedback": "The submission does not contain any of the required calculations or explanations for the K‑Nearest Neighbors problem, so the rubric cannot be applied. Please provide the distances, ordering, nearest neighbors, prediction, and analysis for K=5.",
+    "date": "2026-08-12T05:25:21.833Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "No answer provided",
+    "feedback": "The submission does not contain any of the required calculations, explanations, or predictions for the K‑Nearest Neighbors problem, so it cannot be evaluated against the rubric. Please provide the full answer with distances, ordering, neighbor identification, and analysis for K=3 and K=5.",
+    "date": "2026-08-12T05:25:21.833Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 20,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distances and predictions",
+    "feedback": "You correctly computed several distances, but missed the distance for C3 (it should be ≈2.06, not 6.15). This error led to an incorrect ordering of points, wrong selection of the three nearest neighbors, and consequently an incorrect prediction for both K=3 and K=5. Additionally, the explanation for how the prediction changes with K=5 is inaccurate; the majority vote, not a built‑in bias toward the minority class, determines the outcome. Review the Euclidean distance formula and the majority‑vote rule in K‑NN to improve accuracy.",
+    "date": "2026-08-12T05:36:14.829Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 90,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "The student correctly computed Euclidean distances (with minor rounding inconsistencies), ordered them, identified the 3‑nearest neighbors, and made the correct majority‑vote prediction. The explanation for K=5 is accurate, showing the vote shift but unchanged outcome. Minor typographical errors and a slight mismatch in the listed distance for C2 (rounded to 5 instead of 5.22) prevent a perfect score, but the core reasoning is solid.",
+    "date": "2026-08-12T05:36:14.829Z"
   }
 ]

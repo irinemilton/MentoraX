@@ -41,19 +41,64 @@ app.get('/api/students', (req, res) => {
   }
 });
 
-// Gemini Vision Logic
+// ==========================================
+// Vision Provider 1: OpenRouter (PRIMARY)
+// Model: meta-llama/llama-4-scout — confirmed working, vision-capable
+// ==========================================
+async function extractTextWithOpenRouter(assignment) {
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_openrouter_key_here') {
+    throw new Error('No valid OPENROUTER_API_KEY set');
+  }
+
+  let safeMimeType = assignment.mimeType;
+  if (!safeMimeType || !safeMimeType.startsWith('image/')) safeMimeType = 'image/jpeg';
+
+  const prompt = 'You are an expert OCR system. Read the handwritten assignment in this image and transcribe all the text you see. Output ONLY the raw transcribed text with no conversational filler or markdown formatting.';
+  const model = 'meta-llama/llama-4-scout';
+
+  console.log(`[Vision Agent] Sending to OpenRouter (${model}): Base64 length: ${assignment.base64.length}`);
+
+  const response = await axios.post(
+    'https://openrouter.ai/api/v1/chat/completions',
+    {
+      model,
+      messages: [{ role: 'user', content: [
+        { type: 'text', text: prompt },
+        { type: 'image_url', image_url: { url: `data:${safeMimeType};base64,${assignment.base64}` } }
+      ]}],
+      max_tokens: 4096
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://mentoraX.app',
+        'X-Title': 'MentoraX'
+      },
+      timeout: 45000
+    }
+  );
+
+  const text = response.data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error('OpenRouter returned empty response');
+  return text;
+}
+
+// ==========================================
+// Vision Provider 2: Gemini Direct (FALLBACK)
+// ==========================================
+
 async function extractTextWithGemini(assignment) {
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
     
-    // Ensure mimeType is supported by Gemini
     let safeMimeType = assignment.mimeType;
     if (!safeMimeType || !safeMimeType.startsWith('image/')) {
       safeMimeType = 'image/jpeg';
     }
 
-    // Convert base64 data to GoogleGenerativeAI format
     const imagePart = {
       inlineData: {
         data: assignment.base64,
@@ -74,7 +119,34 @@ async function extractTextWithGemini(assignment) {
   }
 }
 
+// ==========================================
+// Vision Fallback Chain:
+//   1. OpenRouter → meta-llama/llama-4-scout  (PRIMARY — tested & confirmed working)
+//   2. Gemini Direct                           (FALLBACK — when quota resets)
+// ==========================================
+async function extractTextWithFallback(assignment) {
+  // Tier 1: OpenRouter (Llama 4 Scout — vision-capable, confirmed working in tests)
+  try {
+    const text = await extractTextWithOpenRouter(assignment);
+    console.log(`[Vision Agent] ✅ OpenRouter (llama-4-scout) succeeded for ${assignment.name}`);
+    return text;
+  } catch (err1) {
+    console.warn(`[Vision Agent] ⚠️ OpenRouter failed (${err1.message}) — trying Gemini direct...`);
+  }
+
+  // Tier 2: Gemini Direct (fallback when quota is available)
+  try {
+    const text = await extractTextWithGemini(assignment);
+    console.log(`[Vision Agent] ✅ Gemini direct succeeded for ${assignment.name}`);
+    return text;
+  } catch (fallbackError) {
+    console.error(`[Vision Agent] ❌ All vision providers failed for ${assignment.name}: ${fallbackError.message}`);
+    throw new Error(`All vision providers exhausted: ${fallbackError.message}`);
+  }
+}
+
 // Helper function to extract folder ID from Google Drive URL
+
 function extractFolderId(url) {
   const match = url.match(/\/folders\/([a-zA-Z0-9-_]+)/);
   return match ? match[1] : null;
@@ -299,11 +371,11 @@ app.post('/api/evaluate', async (req, res) => {
         const file = record.files[i];
         sendLog(`[Vision Agent] Reading page ${i + 1}: ${file.name}...`, 'running', 'Eye');
         try {
-          const extractedPageText = await extractTextWithGemini(file);
+          const extractedPageText = await extractTextWithFallback(file);
           combinedText += `\n--- PAGE ${i + 1} (${file.name}) ---\n${extractedPageText}\n`;
           sendLog(`[Vision Agent] Extracted text from page ${i + 1}`, 'success', 'CheckCircle');
         } catch (visionError) {
-          sendLog(`[Vision Agent Error] Failed on ${file.name}`, 'warning', 'AlertTriangle');
+          sendLog(`[Vision Agent Error] Both providers failed on ${file.name}`, 'warning', 'AlertTriangle');
           combinedText += `\n--- PAGE ${i + 1} (${file.name}) ---\n[ERROR EXTRACTING TEXT]\n`;
         }
       }
