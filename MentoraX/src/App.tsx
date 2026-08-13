@@ -124,7 +124,7 @@ function App() {
                 if (data.type === 'log') {
                   setAgentSteps(prev => {
                     // Mark previous running steps as success
-                    const updated = prev.map(s => s.status === 'running' ? { ...s, status: 'success' } : s);
+                    const updated = prev.map(s => s.status === 'running' ? { ...s, status: 'success' as const } : s);
                     
                     // Choose icon based on string
                     let IconComponent = Bot;
@@ -142,7 +142,7 @@ function App() {
                     return [...updated, { 
                       id: stepIdCounter++, 
                       text: data.message, 
-                      status: data.status, 
+                      status: data.status as 'pending' | 'running' | 'success' | 'warning', 
                       icon: <IconComponent size={16} /> 
                     }];
                   });
