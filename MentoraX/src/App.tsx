@@ -24,6 +24,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedReviewResult, setSelectedReviewResult] = useState<any | null>(null);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
+  const [teacherRubric, setTeacherRubric] = useState('');
   const traceEndRef = useRef<HTMLDivElement>(null);
   
   // Fetch historical DB on mount
@@ -97,7 +98,7 @@ function App() {
       const response = await fetch('http://localhost:3001/api/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driveUrl, accessToken })
+        body: JSON.stringify({ driveUrl, accessToken, teacherInstructions: teacherRubric })
       });
 
       if (!response.body) throw new Error('ReadableStream not supported');
@@ -654,14 +655,26 @@ function App() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-300 mb-1">Groq API Key</label>
-                    <input type="password" placeholder="gsk_..." className="input-field w-full" />
+                    <label className="block text-sm text-gray-300 mb-2">
+                      Grading Instructions
+                      <span style={{ marginLeft: '8px', fontSize: '0.7rem', color: '#64748b', fontWeight: 400 }}>
+                        (optional — guides the AI evaluator)
+                      </span>
+                    </label>
+                    <textarea
+                      rows={6}
+                      className="input-field w-full"
+                      placeholder={"e.g.\n• Award 40 marks for correct methodology\n• Award 30 marks for accurate calculations\n• Award 30 marks for presentation and conclusion\n• Deduct marks for incomplete answers"}
+                      value={teacherRubric}
+                      onChange={e => setTeacherRubric(e.target.value)}
+                      style={{ resize: 'vertical', lineHeight: 1.6 }}
+                    />
+                    <p style={{ fontSize: '0.75rem', color: '#475569', marginTop: '6px' }}>
+                      {teacherRubric
+                        ? '✅ These instructions will be sent to the Evaluator Agent when you run the pipeline.'
+                        : 'If left empty, the AI will grade using the rubric file from your Drive folder (or default academic standards).'}
+                    </p>
                   </div>
-                  <div>
-                    <label className="block text-sm text-gray-300 mb-1">Default Grading Rubric Context</label>
-                    <textarea rows={4} className="input-field w-full" placeholder="Enter standard grading rules..."></textarea>
-                  </div>
-                  <button className="btn btn-primary mt-4 self-start">Save Settings</button>
                 </div>
               </div>
             )}

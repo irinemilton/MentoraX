@@ -187,7 +187,7 @@ app.post('/api/evaluate', async (req, res) => {
   };
 
   try {
-    const { driveUrl, accessToken } = req.body;
+    const { driveUrl, accessToken, teacherInstructions } = req.body;
     
     if (!driveUrl || !accessToken) {
       sendLog('[Error] Missing driveUrl or accessToken', 'warning', 'AlertTriangle');
@@ -261,6 +261,12 @@ app.post('/api/evaluate', async (req, res) => {
       }
     } else {
       sendLog(`[Drive Agent] No rubric found. Decision: using generic academic grading instructions.`, 'success', 'CheckCircle');
+    }
+
+    // Inject teacher's custom grading instructions if provided from Profile settings
+    if (teacherInstructions && teacherInstructions.trim()) {
+      rubricContext += `\n\n### TEACHER GRADING INSTRUCTIONS ###\n${teacherInstructions.trim()}`;
+      sendLog(`[Evaluator Agent] 📋 Teacher instructions received (${teacherInstructions.trim().length} chars) — injected into grading context`, 'running', 'FileText');
     }
 
     // Identify Assignment Files
