@@ -449,12 +449,13 @@ app.post('/api/evaluate', async (req, res) => {
           score: evaluation.score,
           status: status,
           attention_required: evaluation.attention_required,
-          feedback: evaluation.feedback
+          feedback: evaluation.feedback,
+          fileIds: record.files.map(f => f.id)
         });
 
       } catch (evalError) {
         sendLog(`[Evaluator Error] Failed grading ${record.studentEmail}`, 'warning', 'AlertTriangle');
-        results.push({ name: 'Multi-page Submission', studentEmail: record.studentEmail, score: 0, status: 'Held for Review', attention_required: 'Error parsing evaluation' });
+        results.push({ name: record.files.length > 1 ? 'Multi-page Submission' : record.files[0].name, studentEmail: record.studentEmail, score: 0, status: 'Held for Review', attention_required: 'Error parsing evaluation', fileIds: record.files.map(f => f.id) });
       }
     }
 
@@ -534,19 +535,15 @@ app.post('/api/approve', async (req, res) => {
   try {
     const { studentEmail, score, feedback, accessToken, name } = req.body;
     
-    if (!studentEmail || !accessToken) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    console.log(`[Agent] Initiating Gmail Agent for manually approved assignment: ${name}`);
+    // 1. Send Email
     const auth = new google.auth.OAuth2();
     auth.setCredentials({ access_token: accessToken });
     const gmail = google.gmail({ version: 'v1', auth });
 
+    console.log(`[Agent] Initiating Gmail Agent for manually approved assignment: ${name}`);
     const subject = 'Your Assignment Feedback - MentoraX';
     const body = `Hello,\n\nHere is the feedback for your recent assignment (${name}):\n\nScore: ${score}/100\n\nFeedback:\n${feedback}\n\nBest regards,\nMentoraX AI Assistant`;
     
-    // Construct raw email
     const emailLines = [
       `To: ${studentEmail}`,
       'Content-type: text/plain;charset=utf-8',
@@ -560,20 +557,54 @@ app.post('/api/approve', async (req, res) => {
 
     await gmail.users.messages.send({
       userId: 'me',
-      requestBody: {
-        raw: base64EncodedEmail,
-      },
+      requestBody: { raw: base64EncodedEmail },
     });
-
     console.log(`[Agent] Successfully emailed feedback to ${studentEmail}`);
-    res.json({ status: 'success', message: 'Email dispatched successfully.' });
+    // 2. Update local DB
+    if (fs.existsSync('db.json')) {
+      const db = JSON.parse(fs.readFileSync('db.json', 'utf8'));
+      const record = db.find(r => r.studentEmail === studentEmail && r.status === 'Held for Review');
+      if (record) {
+        record.status = 'Emailed';
+        record.score = score;
+        record.feedback = feedback;
+        fs.writeFileSync('db.json', JSON.stringify(db, null, 2));
+      }
+    }
 
-  } catch (error) {
-    console.error(`[Agent] Gmail Error for manual approval:`, error.message);
-    res.status(500).json({ error: 'Failed to send email.' });
+    res.json({ status: 'success' });
+  } catch (err) {
+    console.error('Approval/Email error:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+// GET endpoint to fetch file preview from Google Drive
+app.get('/api/file-preview', async (req, res) => {
+  try {
+    const { fileId, accessToken } = req.query;
+    if (!fileId || !accessToken) return res.status(400).json({ error: 'Missing parameters' });
+
+    const auth = new google.auth.OAuth2();
+    auth.setCredentials({ access_token: accessToken });
+    const drive = google.drive({ version: 'v3', auth });
+
+    const meta = await drive.files.get({ fileId, fields: 'mimeType, name' });
+    const fileRes = await drive.files.get({ fileId, alt: 'media' }, { responseType: 'arraybuffer' });
+    const base64 = Buffer.from(fileRes.data).toString('base64');
+
+    res.json({
+      mimeType: meta.data.mimeType,
+      name: meta.data.name,
+      base64
+    });
+  } catch (error) {
+    console.error('File preview fetch error:', error);
+    res.status(500).json({ error: 'Failed to retrieve file preview' });
+  }
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });

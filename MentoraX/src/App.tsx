@@ -26,6 +26,8 @@ function App() {
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
   const [teacherRubric, setTeacherRubric] = useState('');
   const [emailEnabled, setEmailEnabled] = useState(true);
+  const [previewData, setPreviewData] = useState<{base64: string, mimeType: string} | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const traceEndRef = useRef<HTMLDivElement>(null);
   
   // Fetch historical DB on mount
@@ -83,10 +85,33 @@ function App() {
   
   // Auto-scroll Live Agent Trace
   useEffect(() => {
-    if (agentSteps.length > 0 && traceEndRef.current) {
+    if (traceEndRef.current) {
       traceEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [agentSteps]);
+
+  // Fetch file preview when a review result is selected
+  useEffect(() => {
+    if (selectedReviewResult && selectedReviewResult.fileIds && selectedReviewResult.fileIds.length > 0 && accessToken) {
+      setIsLoadingPreview(true);
+      setPreviewData(null);
+      // Fetch the first file's preview
+      fetch(`http://localhost:3001/api/file-preview?fileId=${selectedReviewResult.fileIds[0]}&accessToken=${accessToken}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.base64) {
+            setPreviewData(data);
+          }
+          setIsLoadingPreview(false);
+        })
+        .catch(err => {
+          console.error("Failed to load file preview:", err);
+          setIsLoadingPreview(false);
+        });
+    } else {
+      setPreviewData(null);
+    }
+  }, [selectedReviewResult, accessToken]);
 
   // Function to consume real-time SSE agent traces from the backend
   const startAgentPipeline = async () => {
@@ -814,68 +839,94 @@ function App() {
           >
             <motion.div 
               className="glass-panel"
-              style={{ width: '100%', maxWidth: '600px', margin: '0 20px', position: 'relative' }}
+              style={{ width: '100%', maxWidth: '1000px', margin: '0 20px', position: 'relative', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
             >
               <button 
                 onClick={() => setSelectedReviewResult(null)}
-                style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', zIndex: 10 }}
               >
                 <X size={24} />
               </button>
               
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <Mail style={{ color: '#60a5fa' }} /> Review Email Draft
+                <Mail style={{ color: '#60a5fa' }} /> Manual Review Required
               </h2>
-              <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px' }}>Review the AI-generated feedback before sending it to the student.</p>
+              <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px' }}>Compare the original submission with the AI evaluation before approving.</p>
               
-              <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.5)', borderRadius: '8px', padding: '16px', marginBottom: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px', fontSize: '14px' }}>
-                  <div>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>To (Student Email)</span>
-                    <span style={{ color: '#fff', fontWeight: 500 }}>{selectedReviewResult.studentEmail}</span>
+              <div style={{ display: 'flex', gap: '24px', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                {/* Left Column: Image Preview */}
+                <div style={{ flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.5)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'rgba(30, 41, 59, 0.5)', fontSize: '13px', fontWeight: 600, color: '#e2e8f0' }}>
+                    Student Submission
                   </div>
-                  <div>
-                    <span style={{ color: '#64748b', display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Assessed Score</span>
-                    <span style={{ fontWeight: 'bold', color: selectedReviewResult.score >= 60 ? '#4ade80' : '#f87171' }}>
-                      {selectedReviewResult.score}%
-                    </span>
+                  <div style={{ flex: 1, overflow: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', position: 'relative' }}>
+                    {isLoadingPreview ? (
+                      <div className="flex flex-col items-center text-gray-400">
+                        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-sm">Fetching from Google Drive...</p>
+                      </div>
+                    ) : previewData ? (
+                      previewData.mimeType === 'application/pdf' ? (
+                        <embed src={`data:application/pdf;base64,${previewData.base64}`} type="application/pdf" width="100%" height="100%" style={{ minHeight: '400px', borderRadius: '4px' }} />
+                      ) : (
+                        <img src={`data:${previewData.mimeType};base64,${previewData.base64}`} alt="Student Submission" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '4px' }} />
+                      )
+                    ) : (
+                      <div className="text-gray-500 text-sm flex flex-col items-center">
+                        <AlertTriangle size={32} className="mb-2 opacity-50" />
+                        <p>Preview unavailable. File might be missing or unsupported.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-                
-                <div style={{ marginTop: '16px' }}>
-                  <span style={{ color: '#64748b', display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Drafted Feedback</span>
-                  <div style={{ backgroundColor: 'rgba(30, 41, 59, 0.8)', padding: '16px', borderRadius: '4px', color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    Dear Student,
-                    
-                    Your recent assignment has been evaluated. You scored {selectedReviewResult.score}%.
-                    
-                    {selectedReviewResult.feedback}
-                    
-                    Best regards,
-                    MentoraX AI Evaluator
-                  </div>
-                </div>
-              </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                <button 
-                  onClick={() => setSelectedReviewResult(null)}
-                  className="btn"
-                  style={{ backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#e2e8f0' }}
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => handleApprove(selectedReviewResult)}
-                  className="btn btn-primary"
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <UploadCloud size={18} />
-                  Approve & Send Email
-                </button>
+                {/* Right Column: Feedback & Controls */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+                  <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.5)', borderRadius: '8px', padding: '16px', marginBottom: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px', fontSize: '14px' }}>
+                      <div>
+                        <span style={{ color: '#64748b', display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>To (Student Email)</span>
+                        <span style={{ color: '#fff', fontWeight: 500 }}>{selectedReviewResult.studentEmail}</span>
+                      </div>
+                      <div>
+                        <span style={{ color: '#64748b', display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Assessed Score</span>
+                        <span style={{ fontWeight: 'bold', color: selectedReviewResult.score >= 60 ? '#4ade80' : '#f87171' }}>
+                          {selectedReviewResult.score}%
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div style={{ marginTop: '16px' }}>
+                      <span style={{ color: '#64748b', display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Drafted Feedback (Editable)</span>
+                      <textarea 
+                        style={{ width: '100%', minHeight: '200px', backgroundColor: 'rgba(30, 41, 59, 0.8)', padding: '16px', borderRadius: '4px', color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6', border: '1px solid rgba(255,255,255,0.1)', resize: 'vertical' }}
+                        value={selectedReviewResult.feedback}
+                        onChange={(e) => setSelectedReviewResult({...selectedReviewResult, feedback: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: 'auto' }}>
+                    <button 
+                      onClick={() => setSelectedReviewResult(null)}
+                      className="btn"
+                      style={{ backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#e2e8f0' }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => handleApprove(selectedReviewResult)}
+                      className="btn btn-primary"
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      <UploadCloud size={18} />
+                      Approve & Send Email
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </motion.div>
