@@ -604,6 +604,50 @@ app.get('/api/file-preview', async (req, res) => {
   }
 });
 
+// POST endpoint for contextual chat with the Evaluator LLM
+app.post('/api/chat-evaluate', async (req, res) => {
+  try {
+    const { teacherPrompt, chatHistory, currentScore, currentFeedback, studentEmail } = req.body;
+    
+    // Build context
+    let systemPrompt = `You are a helpful AI teaching assistant in a manual review dashboard. You are chatting with the teacher about a student's submission (${studentEmail}).
+The current assigned score is ${currentScore}/100.
+The current drafted feedback is:
+"${currentFeedback}"
+
+The teacher will ask you questions or instruct you to adjust the feedback and score.
+Provide a JSON response with the following keys:
+1. "reply": Your conversational response to the teacher.
+2. "newScore": (Optional) Include only if the teacher asks you to adjust the score, or if your updated feedback implies a score change. Must be a number.
+3. "newFeedback": (Optional) Include only if the teacher asks you to adjust the feedback. Must be a string.
+
+Respond ONLY with valid JSON.`;
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistory,
+      { role: 'user', content: teacherPrompt }
+    ];
+
+    console.log(`[Agent] Initiating Chat Agent for ${studentEmail}`);
+    
+    // Using groq as configured in Phase 3
+    const chatCompletion = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: messages,
+      temperature: 0.2,
+      response_format: { type: 'json_object' }
+    });
+
+    const responseContent = JSON.parse(chatCompletion.choices[0].message.content);
+    res.json(responseContent);
+
+  } catch (error) {
+    console.error('Chat Evaluator error:', error);
+    res.status(500).json({ error: 'Failed to process chat evaluation.' });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

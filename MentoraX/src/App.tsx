@@ -28,6 +28,12 @@ function App() {
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [previewData, setPreviewData] = useState<{base64: string, mimeType: string} | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  
+  // Chatbot states
+  const [chatMessages, setChatMessages] = useState<{role: string, content: string}[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
   const traceEndRef = useRef<HTMLDivElement>(null);
   
   // Fetch historical DB on mount
@@ -112,6 +118,49 @@ function App() {
       setPreviewData(null);
     }
   }, [selectedReviewResult, accessToken]);
+
+  const handleChatSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!chatInput.trim() || !selectedReviewResult) return;
+    
+    const userMessage = { role: 'user', content: chatInput };
+    const updatedHistory = [...chatMessages, userMessage];
+    setChatMessages(updatedHistory);
+    setChatInput('');
+    setIsChatLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:3001/api/chat-evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teacherPrompt: userMessage.content,
+          chatHistory: chatMessages,
+          currentScore: selectedReviewResult.score,
+          currentFeedback: selectedReviewResult.feedback,
+          studentEmail: selectedReviewResult.studentEmail
+        })
+      });
+
+      const data = await response.json();
+      
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+      
+      // Automatically update score and feedback if AI provided them
+      if (data.newScore !== undefined || data.newFeedback !== undefined) {
+        setSelectedReviewResult((prev: any) => ({
+          ...prev,
+          score: data.newScore !== undefined ? data.newScore : prev.score,
+          feedback: data.newFeedback !== undefined ? data.newFeedback : prev.feedback
+        }));
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error while trying to respond.' }]);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
 
   // Function to consume real-time SSE agent traces from the backend
   const startAgentPipeline = async () => {
@@ -902,11 +951,48 @@ function App() {
                     <div style={{ marginTop: '16px' }}>
                       <span style={{ color: '#64748b', display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Drafted Feedback (Editable)</span>
                       <textarea 
-                        style={{ width: '100%', minHeight: '200px', backgroundColor: 'rgba(30, 41, 59, 0.8)', padding: '16px', borderRadius: '4px', color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6', border: '1px solid rgba(255,255,255,0.1)', resize: 'vertical' }}
+                        style={{ width: '100%', minHeight: '120px', backgroundColor: 'rgba(30, 41, 59, 0.8)', padding: '16px', borderRadius: '4px', color: '#cbd5e1', fontSize: '14px', lineHeight: '1.6', border: '1px solid rgba(255,255,255,0.1)', resize: 'vertical' }}
                         value={selectedReviewResult.feedback}
                         onChange={(e) => setSelectedReviewResult({...selectedReviewResult, feedback: e.target.value})}
                       />
                     </div>
+                  </div>
+
+                  {/* Contextual AI Chat */}
+                  <div style={{ backgroundColor: 'rgba(15, 23, 42, 0.5)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, minHeight: '200px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <span style={{ color: '#64748b', display: 'block', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                      <Bot size={14} style={{display:'inline', marginRight: '4px'}}/> Ask AI Assistant
+                    </span>
+                    
+                    <div style={{ flex: 1, overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {chatMessages.length === 0 ? (
+                         <div style={{ color: '#475569', fontSize: '13px', fontStyle: 'italic', textAlign: 'center', marginTop: '20px' }}>Ask me to explain the grade or modify the feedback...</div>
+                      ) : (
+                        chatMessages.map((msg, i) => (
+                          <div key={i} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', backgroundColor: msg.role === 'user' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(30, 41, 59, 0.8)', padding: '8px 12px', borderRadius: '8px', maxWidth: '90%', fontSize: '13px', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            {msg.content}
+                          </div>
+                        ))
+                      )}
+                      {isChatLoading && (
+                        <div style={{ alignSelf: 'flex-start', backgroundColor: 'rgba(30, 41, 59, 0.8)', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', color: '#94a3b8' }}>
+                          <span className="animate-pulse">Thinking...</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <form onSubmit={handleChatSubmit} style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                      <input 
+                        type="text" 
+                        placeholder="e.g., Be more encouraging in the feedback..." 
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        style={{ flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
+                      />
+                      <button type="submit" disabled={isChatLoading || !chatInput.trim()} style={{ backgroundColor: 'rgba(59, 130, 246, 0.8)', border: 'none', borderRadius: '4px', padding: '0 12px', color: '#fff', cursor: isChatLoading ? 'not-allowed' : 'pointer', fontWeight: 600 }}>
+                        Send
+                      </button>
+                    </form>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: 'auto' }}>
