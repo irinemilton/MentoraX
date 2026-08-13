@@ -703,11 +703,6 @@ function App() {
                     <label className="block text-sm text-gray-300 mb-1">Google Account</label>
                     <div className="flex gap-2">
                       <input type="text" value={isAuthenticated ? "Connected via OAuth" : "Not Connected"} disabled className="input-field w-full opacity-70" />
-                      {isAuthenticated && (
-                        <button onClick={handleLogout} className="px-4 py-2 bg-red-600/80 hover:bg-red-500 rounded text-sm font-semibold transition-colors duration-200">
-                          Logout
-                        </button>
-                      )}
                     </div>
                   </div>
                   <div>
