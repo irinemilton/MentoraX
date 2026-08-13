@@ -290,8 +290,48 @@ function App() {
             Sign in with Google
           </button>
         ) : (
-          <div className="flex items-center gap-2">
-            <span className="badge badge-success">Authenticated</span>
+          <div className="flex items-center gap-3">
+            <span
+              className="badge badge-success"
+              style={{ fontSize: '0.7rem', letterSpacing: '0.05em' }}
+            >
+              ● Connected
+            </span>
+            <button
+              onClick={handleLogout}
+              title="Sign out"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.45rem 1rem',
+                borderRadius: '9999px',
+                background: 'rgba(255,255,255,0.06)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#94a3b8',
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.background = 'rgba(239,68,68,0.12)';
+                btn.style.borderColor = 'rgba(239,68,68,0.35)';
+                btn.style.color = '#fca5a5';
+              }}
+              onMouseLeave={e => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.background = 'rgba(255,255,255,0.06)';
+                btn.style.borderColor = 'rgba(255,255,255,0.15)';
+                btn.style.color = '#94a3b8';
+              }}
+            >
+              <X size={13} />
+              Sign out
+            </button>
           </div>
         )}
       </header>
