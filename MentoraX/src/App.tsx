@@ -25,6 +25,7 @@ function App() {
   const [selectedReviewResult, setSelectedReviewResult] = useState<any | null>(null);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
   const [teacherRubric, setTeacherRubric] = useState('');
+  const [emailEnabled, setEmailEnabled] = useState(true);
   const traceEndRef = useRef<HTMLDivElement>(null);
   
   // Fetch historical DB on mount
@@ -98,7 +99,7 @@ function App() {
       const response = await fetch('http://localhost:3001/api/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driveUrl, accessToken, teacherInstructions: teacherRubric })
+        body: JSON.stringify({ driveUrl, accessToken, teacherInstructions: teacherRubric, emailEnabled })
       });
 
       if (!response.body) throw new Error('ReadableStream not supported');
@@ -376,6 +377,61 @@ function App() {
                         {isProcessing ? 'Agents Running...' : 'Start Evaluation'}
                       </button>
                       
+                      {/* Email Toggle */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', padding: '12px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <div>
+                          <p style={{ fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 500, marginBottom: '2px' }}>Send Email to Students</p>
+                          <p style={{ fontSize: '0.72rem', color: '#64748b' }}>{emailEnabled ? 'Feedback will be emailed automatically' : 'Only CSV report will be generated'}</p>
+                        </div>
+                        <button
+                          onClick={() => setEmailEnabled(p => !p)}
+                          style={{
+                            width: '44px', height: '24px', borderRadius: '9999px', border: 'none', cursor: 'pointer',
+                            background: emailEnabled ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
+                            position: 'relative', transition: 'background 0.25s ease', flexShrink: 0,
+                          }}
+                        >
+                          <span style={{
+                            position: 'absolute', top: '3px',
+                            left: emailEnabled ? '22px' : '3px',
+                            width: '18px', height: '18px', borderRadius: '50%',
+                            background: emailEnabled ? '#ffffff' : '#475569',
+                            transition: 'left 0.25s ease, background 0.25s ease',
+                            display: 'block',
+                          }} />
+                        </button>
+                      </div>
+
+                      {/* CSV Download Button - shown after results */}
+                      {evalResults.length > 0 && (
+                        <button
+                          onClick={() => {
+                            const headers = ['Name', 'Student Email', 'Score', 'Status', 'Feedback', 'Date'];
+                            const rows = evalResults.map(r => [
+                              `"${(r.name || '').replace(/"/g, '""')}"`,
+                              `"${(r.studentEmail || '').replace(/"/g, '""')}"`,
+                              r.score,
+                              `"${(r.status || '').replace(/"/g, '""')}"`,
+                              `"${(r.feedback || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+                              `"${new Date().toISOString().split('T')[0]}"`
+                            ]);
+                            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                            const blob = new Blob([csv], { type: 'text/csv' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `MentoraX_Results_${new Date().toISOString().split('T')[0]}.csv`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="btn btn-outline w-full mt-3"
+                          style={{ gap: '8px', fontSize: '0.875rem' }}
+                        >
+                          <Download size={15} />
+                          Download Results CSV
+                        </button>
+                      )}
+
                       {!isAuthenticated && (
                         <p className="text-sm mt-4 text-[#f87171]">
                           <AlertTriangle size={14} className="inline mr-1" />

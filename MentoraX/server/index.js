@@ -187,7 +187,7 @@ app.post('/api/evaluate', async (req, res) => {
   };
 
   try {
-    const { driveUrl, accessToken, teacherInstructions } = req.body;
+    const { driveUrl, accessToken, teacherInstructions, emailEnabled } = req.body;
     
     if (!driveUrl || !accessToken) {
       sendLog('[Error] Missing driveUrl or accessToken', 'warning', 'AlertTriangle');
@@ -458,44 +458,49 @@ app.post('/api/evaluate', async (req, res) => {
       }
     }
 
-    // Phase 4: Send results via Gmail API using accessToken
+    // Phase 4: Gmail Agent
     const emailQueue = results.filter(r => r.status === 'Emailed' && r.studentEmail !== 'unknown@student.edu');
     const heldQueue = results.filter(r => r.status === 'Held for Review');
-    sendLog(`[Gmail Agent] 🤔 Reasoning: ${emailQueue.length} student(s) above threshold → auto-email | ${heldQueue.length} student(s) below threshold → hold for teacher`, 'running', 'Mail');
-    const gmail = google.gmail({ version: 'v1', auth });
 
-    for (const resItem of results) {
-      if (resItem.status === 'Emailed' && resItem.studentEmail !== 'unknown@student.edu') {
-        try {
-          sendLog(`[Gmail Agent] 🔍 Tool call: gmail.users.messages.send → ${resItem.studentEmail} (score: ${resItem.score}%)`, 'running', 'Mail');
-          const subject = 'Your Assignment Feedback - MentoraX';
-          const body = `Hello,\n\nHere is the feedback for your recent assignment (${resItem.name}):\n\nScore: ${resItem.score}/100\n\nFeedback:\n${resItem.feedback}\n\nBest regards,\nMentoraX AI Assistant`;
-          
-          // Construct raw email
-          const emailLines = [
-            `To: ${resItem.studentEmail}`,
-            'Content-type: text/plain;charset=utf-8',
-            'MIME-Version: 1.0',
-            `Subject: ${subject}`,
-            '',
-            body
-          ];
-          const email = emailLines.join('\r\n');
-          const base64EncodedEmail = Buffer.from(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
+    if (emailEnabled === false) {
+      sendLog(`[Gmail Agent] 🧠 Decision: Email sending disabled by teacher — skipping Gmail, generating CSV report only`, 'warning', 'Mail');
+      sendLog(`[Gmail Agent] 📋 ${emailQueue.length} student(s) graded and ready for CSV download`, 'success', 'CheckCircle');
+    } else {
+      sendLog(`[Gmail Agent] 🤔 Reasoning: ${emailQueue.length} student(s) above threshold → auto-email | ${heldQueue.length} student(s) below threshold → hold for teacher`, 'running', 'Mail');
+      const gmail = google.gmail({ version: 'v1', auth });
 
-          await gmail.users.messages.send({
-            userId: 'me',
-            requestBody: { raw: base64EncodedEmail },
-          });
-          sendLog(`[Gmail Agent] ✅ Observation: Feedback email delivered to ${resItem.studentEmail}`, 'success', 'CheckCircle');
-        } catch (emailError) {
-          sendLog(`[Gmail Error] Failed on ${resItem.studentEmail}: ${emailError.message}`, 'warning', 'AlertTriangle');
-          resItem.status = 'Held for Review';
+      for (const resItem of results) {
+        if (resItem.status === 'Emailed' && resItem.studentEmail !== 'unknown@student.edu') {
+          try {
+            sendLog(`[Gmail Agent] 🔍 Tool call: gmail.users.messages.send → ${resItem.studentEmail} (score: ${resItem.score}%)`, 'running', 'Mail');
+            const subject = 'Your Assignment Feedback - MentoraX';
+            const body = `Hello,\n\nHere is the feedback for your recent assignment (${resItem.name}):\n\nScore: ${resItem.score}/100\n\nFeedback:\n${resItem.feedback}\n\nBest regards,\nMentoraX AI Assistant`;
+            
+            const emailLines = [
+              `To: ${resItem.studentEmail}`,
+              'Content-type: text/plain;charset=utf-8',
+              'MIME-Version: 1.0',
+              `Subject: ${subject}`,
+              '',
+              body
+            ];
+            const email = emailLines.join('\r\n');
+            const base64EncodedEmail = Buffer.from(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
+
+            await gmail.users.messages.send({
+              userId: 'me',
+              requestBody: { raw: base64EncodedEmail },
+            });
+            sendLog(`[Gmail Agent] ✅ Observation: Feedback email delivered to ${resItem.studentEmail}`, 'success', 'CheckCircle');
+          } catch (emailError) {
+            sendLog(`[Gmail Error] Failed on ${resItem.studentEmail}: ${emailError.message}`, 'warning', 'AlertTriangle');
+            resItem.status = 'Held for Review';
+          }
+        } else if (resItem.status === 'Held for Review') {
+          sendLog(`[Gmail Agent] 🧠 Decision: ${resItem.studentEmail} held — score below threshold, awaiting teacher approval`, 'warning', 'AlertTriangle');
+        } else if (resItem.status === 'Emailed') {
+          sendLog(`[Gmail Agent] Skipped emailing ${resItem.name} (No mapped email)`, 'warning', 'AlertTriangle');
         }
-      } else if (resItem.status === 'Held for Review') {
-        sendLog(`[Gmail Agent] 🧠 Decision: ${resItem.studentEmail} held — score below threshold, awaiting teacher approval`, 'warning', 'AlertTriangle');
-      } else if (resItem.status === 'Emailed') {
-        sendLog(`[Gmail Agent] Skipped emailing ${resItem.name} (No mapped email)`, 'warning', 'AlertTriangle');
       }
     }
 
