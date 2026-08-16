@@ -15,7 +15,7 @@
 | 👩‍💻 Irine Milton | 👨‍💻 Alan Jaison | 👨‍💻 Navaneeth KR |
 |:---:|:---:|:---:|
 
-🔗 **[GitHub Repository](https://github.com/irinemilton/MentoraX)** · 🎥 **[Demo Video](https://drive.google.com/file/d/1VjHV2m0FIKJig-yhDQZpFhuuulK5TXHR/view?usp=sharing)**
+🔗 **[GitHub Repository](https://github.com/irinemilton/MentoraX)** · 🎥 **[Demo Video](https://drive.google.com/drive/folders/1RXEE9roRTRVWBFcbUgBPasIeEWf2qp46?usp=sharing)**
 
 </div>
 
@@ -294,7 +294,7 @@ MentoraX/
 | | |
 |---|---|
 | 📦 **Repository** | [github.com/irinemilton/MentoraX](https://github.com/irinemilton/MentoraX) |
-| 🎥 **Demo Video** | [Watch Demo](https://drive.google.com/file/d/1VjHV2m0FIKJig-yhDQZpFhuuulK5TXHR/view?usp=sharing) |
+| 🎥 **Demo Video** | [Watch Demo](https://drive.google.com/drive/folders/1RXEE9roRTRVWBFcbUgBPasIeEWf2qp46?usp=sharing) |
 
 ---
 
