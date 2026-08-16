@@ -343,8 +343,14 @@ app.post('/api/evaluate', async (req, res) => {
         
         // Find mapped email from AI Organizer output or fallback
         const aiMatch = matchedMapping.find(m => m.filename === file.name);
-        const fallbackMatch = studentMapping.find(s => s.filename === file.name);
-        const assignedEmail = aiMatch ? aiMatch.email : (fallbackMatch ? fallbackMatch.email : 'unknown@student.edu');
+        const fallbackMatch = studentMapping.find(s => {
+          if (s.filename && s.filename === file.name) return true;
+          const name = s['Student name'] || s.name || s.Name || s.student_name || '';
+          if (name && file.name.toLowerCase().includes(name.toLowerCase().trim())) return true;
+          return false;
+        });
+        const assignedEmail = aiMatch?.email || aiMatch?.Email || fallbackMatch?.email || fallbackMatch?.Email || fallbackMatch?.EMAIL || 'unknown@student.edu';
+
 
         assignments.push({
           id: file.id,

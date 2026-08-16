@@ -104,10 +104,10 @@
   {
     "name": "irine 007.jpg",
     "studentEmail": "irinemilton007@gmail.com",
-    "score": 0,
-    "status": "Held for Review",
+    "score": 50,
+    "status": "Emailed",
     "attention_required": "No answer provided",
-    "feedback": "The submission does not contain any of the required calculations or explanations for the K‑Nearest Neighbors problem, so it cannot be evaluated against the rubric. Please provide the distances, ordering, nearest neighbors, prediction, and analysis for K=5.",
+    "feedback": "You correctly calculated most of the Euclidean distances, but the distance for C3 is wrong (it should be about 2.06, not 6.15). This error leads to an incorrect ordering of the neighbors, an incorrect set of the 3‑nearest neighbors, and consequently wrong predictions for both K=3 and K=5. Additionally, the explanation for the K=5 change misinterprets how majority voting works. Review the distance formula and ensure you rank the points accurately before applying the voting rule.",
     "date": "2026-08-11T13:02:28.127Z"
   },
   {
@@ -333,5 +333,43 @@
     "attention_required": "None",
     "feedback": "The student correctly computed Euclidean distances (with minor rounding inconsistencies), ordered them, identified the 3‑nearest neighbors, and made the correct majority‑vote prediction. The explanation for K=5 is accurate, showing the vote shift but unchanged outcome. Minor typographical errors and a slight mismatch in the listed distance for C2 (rounded to 5 instead of 5.22) prevent a perfect score, but the core reasoning is solid.",
     "date": "2026-08-12T05:36:14.829Z"
+  },
+  {
+    "name": "Multi-page Submission",
+    "studentEmail": "unknown@student.edu",
+    "score": 0,
+    "status": "Held for Review",
+    "attention_required": "Error parsing evaluation",
+    "fileIds": [
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q",
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-16T14:32:10.629Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "irinemilton009@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them, identified the 3‑nearest neighbors, and gave the right prediction. Your explanation for K=5 is accurate and shows clear understanding of how the majority vote can stay the same. Minor suggestion: explicitly note how ties (e.g., equal distances) are resolved, but overall the solution is spot‑on.",
+    "fileIds": [
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q",
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV"
+    ],
+    "date": "2026-08-16T14:41:04.277Z"
+  },
+  {
+    "name": "irine 007.jpg",
+    "studentEmail": "irinemilton007@gmail.com",
+    "score": 25,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance for C3 and wrong neighbor selection",
+    "feedback": "You correctly calculated most of the Euclidean distances, but the distance for C3 is wrong (it should be about 2.06, not 6.15). This error leads to an incorrect ordering of the neighbors, an incorrect set of the 3‑nearest neighbors, and consequently wrong predictions for both K=3 and K=5. Additionally, the explanation for the K=5 change misinterprets how majority voting works. Review the distance formula and ensure you rank the points accurately before applying the voting rule.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-16T14:41:04.277Z"
   }
 ]
