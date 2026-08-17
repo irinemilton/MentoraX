@@ -371,5 +371,294 @@
       "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
     ],
     "date": "2026-08-16T14:41:04.277Z"
+  },
+  {
+    "name": "3 Pages",
+    "studentEmail": "unknown@student.edu",
+    "score": 65,
+    "status": "Emailed",
+    "attention_required": "Inconsistent and incorrect calculations on page 3",
+    "feedback": "You correctly computed the Euclidean distances for most training points and identified the three nearest neighbors (C3, C4, C2) leading to the correct majority‑vote prediction of \"Yes\" for K=3. Your explanation for K=5 on page 2 is also accurate. However, the material on page 3 contains several mistakes – an incorrect distance for C3, a wrong ordering of neighbors, an incorrect K=3 neighbor set, and a flawed explanation of how the prediction changes for K=5. The inconsistency between pages reduces the overall correctness of the assignment.",
+    "fileIds": [
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q",
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-16T15:28:56.291Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 50,
+    "status": "Emailed",
+    "attention_required": "Incorrect distance calculations and predictions",
+    "feedback": "Your work shows an attempt to follow the steps, but several critical errors affect the solution. The Euclidean distance for C3 is incorrect (it should be ≈2.06, not 6.15), which leads to a wrong ordering of distances and an inaccurate set of nearest neighbors. Consequently, the majority‑vote predictions for K=3 and K=5 are also wrong; both should be \"Yes\" based on the correct neighbors. Additionally, the explanation for the K=5 change is not aligned with how KNN works. Review the distance formula, tie‑handling, and majority voting to improve accuracy.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-16T15:46:48.654Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them properly, identified the nearest neighbors for K=3 and K=5, and gave accurate majority‑vote predictions with clear explanations. The solution is complete and well presented.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-16T15:46:48.654Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 50,
+    "status": "Emailed",
+    "attention_required": "Incorrect distance for C3 leading to wrong prediction",
+    "feedback": "You correctly calculated most Euclidean distances, but missed the distance for C3 and consequently ordered the neighbors incorrectly. This led to selecting the wrong three nearest neighbors and an incorrect majority‑vote prediction. Additionally, the explanation for K=5 misstates how K‑NN works; the majority class, not a minority‑balancing rule, determines the prediction. Review distance calculations, tie‑handling, and the voting mechanism for K‑NN.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T05:22:13.590Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them properly, identified the nearest neighbors, and gave accurate predictions for both K=3 and K=5 with clear reasoning. The presentation is clear and complete.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T05:22:13.590Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 20,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance for C3 leading to wrong prediction",
+    "feedback": "You correctly computed several Euclidean distances and listed the values, but you made a critical error for C3's distance, which affected the ordering and neighbor selection. Consequently, the identified nearest neighbors and the majority‑vote predictions for K=3 and K=5 are incorrect. Review how to calculate Euclidean distance and ensure the sorted list reflects the true distances before applying the voting rule.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T14:12:03.023Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them, identified the nearest neighbors for K=3 and K=5, and gave accurate majority‑vote predictions. Your explanations are clear and complete.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T14:12:03.023Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 20,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance for C3 and resulting wrong predictions",
+    "feedback": "You correctly calculated most of the Euclidean distances, but the distance for C3 is wrong (it should be ≈2.06, not 6.15). This error leads to an incorrect ordering of the neighbors, so the three nearest neighbors should be C4, C3, and either C2 or C5, not C4, C2, C5. Consequently the majority class for K=3 is \"Yes\", not \"No\", and the same majority holds for K=5. The explanation for K=5 also misinterprets how K influences the vote. Review the distance formula and the voting rule for K‑NN to correct these steps.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T14:17:33.791Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them, identified the nearest neighbors for K=3 and K=5, and provided accurate majority‑vote predictions. The explanation of how the prediction changes (or doesn’t) with K=5 is clear and correct. Keep up the thorough and precise approach.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T14:17:33.791Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 25,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distances and predictions",
+    "feedback": "You correctly calculated several distances (C1, C2, C4, C5, C6, C7) and listed them, but the distance for C3 is incorrect, which leads to a wrong ordering of neighbors. Consequently, the identified 3‑nearest neighbors, the majority‑vote prediction for K=3, and the explanation for K=5 are all inaccurate. Review the Euclidean distance formula and ensure you rank all points correctly before applying the majority vote.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T14:19:25.367Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them accurately, identified the nearest neighbors, and provided the right majority‑vote predictions for both K=3 and K=5. Your explanations are clear and complete. Keep up the strong analytical approach.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T14:19:25.367Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 25,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance for C3 causing cascade of errors",
+    "feedback": "You correctly computed most of the Euclidean distances, but the distance for C3 is wrong (it should be ≈2.06, not 6.15). This error propagates to the sorted list, the selection of the 3‑nearest neighbors, and the final predictions. With the correct distances, the three nearest neighbors are C4, C3, and either C2 or C5, giving a majority of “Yes” for K=3 and also for K=5. Additionally, the explanation that the algorithm “prioritizes the minority class” is inaccurate. Review how ties are handled and how majority voting determines the class label.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T14:20:57.845Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them, identified the nearest neighbors for K=3 and K=5, and provided accurate majority‑vote predictions with clear explanations. The solution is complete and well presented.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T14:20:57.845Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 20,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance and neighbor selection",
+    "feedback": "You correctly computed most Euclidean distances, but the distance for C3 is wrong (it should be 2.06, not 6.15). This error leads to an incorrect ordering of distances, omission of C3 from the three nearest neighbors, and consequently an incorrect majority‑vote prediction (the correct K=3 prediction is \"Yes\"). The explanation for K=5 also misinterprets how K influences the vote; with K=5 the majority class remains \"Yes\". Review the distance formula and the voting step to ensure ties and ordering are handled properly.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T14:26:49.898Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them, identified the nearest neighbors for K=3 and K=5, and provided accurate majority‑vote predictions with clear explanations. The solution is complete and well presented.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T14:26:49.898Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 20,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance for C3 and wrong neighbor selection",
+    "feedback": "You correctly computed most Euclidean distances, but the distance for C3 is wrong (it should be ≈2.06, not 6.15). This error leads to an incorrect ordering of the points and consequently the wrong choice of the three nearest neighbors. The true 3‑NN are C3, C4 and either C2 or C5, giving a majority of \"Yes\" and a prediction of \"Yes\". For K=5 the correct majority is also \"Yes\". Your explanation about the algorithm “prioritizing the minority class” is not part of standard K‑NN behavior. Review how distances determine neighbor ranking and how majority voting works.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T14:33:08.963Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them properly, identified the nearest neighbors, and gave the right majority‑vote predictions for both K=3 and K=5. Your explanations are clear and complete.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T14:33:08.963Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 20,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance for C3 and wrong neighbor selection",
+    "feedback": "You correctly computed several Euclidean distances and listed them in the right format, but you swapped the distances for C3 and C4, leading to an incorrect ordering. Consequently, the three nearest neighbors you identified are wrong, and the majority‑vote predictions for K=3 and K=5 are also incorrect. Review the distance formula and ensure the nearest‑neighbor list reflects the true smallest distances before making the class vote.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T14:45:44.886Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them, identified the nearest neighbors for K=3 and K=5, and gave accurate majority‑vote predictions with clear explanations. The solution is complete and well‑structured.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T14:45:44.886Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 15,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance calculations and predictions",
+    "feedback": "Your work shows an attempt at the K‑NN steps, but several critical errors affect the results. The Euclidean distance for C3 is miscalculated (it should be ≈2.06, not 6.15), which leads to an incorrect ordering of the distances. Consequently, the three nearest neighbors should be C3, C4, and C2 (or C5), not C4, C2, C5. With the correct neighbors, the majority class for K=3 is \"Yes,\" and for K=5 the majority remains \"Yes\" as well. The explanation about the algorithm automatically prioritizing the minority class is also inaccurate. Review the distance formula, tie‑handling, and majority‑vote rule to improve your solution.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T14:55:05.184Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 98,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Your solution correctly computes all Euclidean distances, orders them, identifies the nearest neighbors, and makes the right majority‑vote predictions for both K=3 and K=5. The only minor issue is a small typographical error in the ordered list (\"C67\" instead of \"C6, C7\"), but it does not affect the correctness of the answer.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T14:55:05.184Z"
+  },
+  {
+    "name": "phoneix207.jpg",
+    "studentEmail": "phoneix207@gmail.com",
+    "score": 20,
+    "status": "Held for Review",
+    "attention_required": "Incorrect distance for C3 and wrong neighbor selection",
+    "feedback": "You correctly calculated most Euclidean distances, but missed the distance for C3 and consequently ordered the neighbors incorrectly. This led to selecting the wrong three nearest neighbors and an incorrect majority‑vote prediction. Additionally, the explanation for K=5 misstates how K‑NN works; the majority class, not a minority‑balancing rule, determines the prediction. Review distance calculations, tie‑handling, and the voting mechanism for K‑NN.",
+    "fileIds": [
+      "1FMMRSQ0NV2rVwmcXKzdSZ1FZKfCJ8-T7"
+    ],
+    "date": "2026-08-17T15:00:20.416Z"
+  },
+  {
+    "name": "2 Pages",
+    "studentEmail": "navaneethkr277@gmail.com",
+    "score": 100,
+    "status": "Emailed",
+    "attention_required": "None",
+    "feedback": "Excellent work! You correctly computed all Euclidean distances, ordered them, identified the nearest neighbors for K=3 and K=5, and gave accurate majority‑vote predictions with clear explanations. The solution fully meets the rubric requirements.",
+    "fileIds": [
+      "1ldqx5AXHRpCiFAx8dw_WQp2s0NLpjTfV",
+      "1SQBgbpU0qHrU2BqR2qNOEN8dHK0flv4q"
+    ],
+    "date": "2026-08-17T15:00:20.416Z"
   }
 ]

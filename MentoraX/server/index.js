@@ -276,7 +276,7 @@ app.post('/api/evaluate', async (req, res) => {
     // Phase 1.5: The Organizer Agent (AI Fuzzy Matching)
     // ==========================================
     sendLog(`[Organizer Agent] 🤔 Reasoning: ${assignmentFiles.length} filenames may not exactly match student names — invoking LLM fuzzy-match`, 'running', 'Users');
-    sendLog(`[Organizer Agent] 🔍 Tool call: groq.chat.completions (llama-3.3-70b-versatile) — semantic filename→email matching`, 'running', 'Users');
+    sendLog(`[Organizer Agent] 🔍 Tool call: groq.chat.completions (openai/gpt-oss-120b) — semantic filename→email matching`, 'running', 'Users');
     
     let matchedMapping = [];
     if (studentMapping.length > 0) {
@@ -290,7 +290,7 @@ app.post('/api/evaluate', async (req, res) => {
         const organizerPrompt = `You are a smart Organizer Agent. Match the following messy filenames to the correct student email address based on semantic similarity. You MUST strictly select the email EXACTLY as it appears in the provided STUDENT EMAILS list. Do NOT make up, guess, or hallucinate emails. If the student's name in the filename matches a name in the email, map them.\n\nFILENAMES:\n${fileNamesList}\n\nSTUDENT EMAILS:\n${emailsList}\n\nRespond with ONLY a JSON object containing a "matches" key. The "matches" key should hold an array of objects, where each object has "filename" and "email" keys. If a file cannot be matched to ANY email in the list, map it to "unknown@student.edu".`;
 
         const organizerCompletion = await groq.chat.completions.create({
-          model: 'llama-3.3-70b-versatile', // Stronger reasoning model to prevent hallucinations
+          model: 'openai/gpt-oss-120b', // Stronger reasoning model to prevent hallucinations
           messages: [{ role: 'system', content: organizerPrompt }],
           temperature: 0.1,
           response_format: { type: 'json_object' }
@@ -411,7 +411,7 @@ app.post('/api/evaluate', async (req, res) => {
       }
       try {
         sendLog(`[Evaluator Agent] 🔍 Tool call: groq.chat.completions → grading ${record.studentEmail} against rubric (${rubricContext.length} chars context)`, 'running', 'BarChart2');
-        const evalModels = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'llama-3.3-70b-versatile'];
+        const evalModels = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3.6-27b'];
         let evalContent = '';
         let usedModel = '';
 
@@ -637,13 +637,22 @@ Respond ONLY with valid JSON.`;
 
     console.log(`[Agent] Initiating Chat Agent for ${studentEmail}`);
     
-    // Using groq as configured in Phase 3
-    const chatCompletion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: messages,
-      temperature: 0.2,
-      response_format: { type: 'json_object' }
-    });
+    const chatModels = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3.6-27b'];
+    let chatCompletion = null;
+    for (const model of chatModels) {
+      try {
+        chatCompletion = await groq.chat.completions.create({
+          model: model,
+          messages: messages,
+          temperature: 0.2,
+          response_format: { type: 'json_object' }
+        });
+        if (chatCompletion) break;
+      } catch (modelErr) {
+        console.warn(`[Agent] Chat model ${model} failed:`, modelErr.message);
+        if (model === chatModels[chatModels.length - 1]) throw modelErr;
+      }
+    }
 
     const responseContent = JSON.parse(chatCompletion.choices[0].message.content);
     res.json(responseContent);
